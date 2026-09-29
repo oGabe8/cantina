@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Aluno - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">🍚</div>
+                <span class="brand-name">CANTINA DIGITAL</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+                <a href="{{ url_for('painel_aluno') }}" class="active">Meu Painel</a>
+            </nav>
+            <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
+        </div>
+    </header>
+
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Cabecalho do painel -->
+    <div class="painel-header">
+        <div>
+            <h1 class="painel-titulo">🧑👩 Painel do Aluno</h1>
+            <p class="painel-subtitulo">Bem-vindo (a), {{ session.get('nome_aluno', 'Estudante') }}.   Aqui você gerencia suas refeições.</p>
+        </div>
+    </div>
+
+    <!-- ===== ABAS ===== -->
+    <div class="tab-grupo">
+
+        <input type="radio" name="aba-aluno" id="aba-cardapio" class="tab-radio" checked>
+        <input type="radio" name="aba-aluno" id="aba-agendamentos" class="tab-radio">
+        <input type="radio" name="aba-aluno" id="aba-saude" class="tab-radio">
+        <input type="radio" name="aba-aluno" id="aba-avisos" class="tab-radio">
+
+        <div class="tab-nav">
+            <label for="aba-cardapio" class="tab-label">🍲 Cardápio da Semana</label>
+            <label for="aba-agendamentos" class="tab-label">📅 Meus Agendamentos</label>
+            <label for="aba-saude" class="tab-label">❤️ Ficha de Saúde </label>
+            <label for="aba-avisos" class="tab-label">🔔 Avisos</label>
+        </div>
+
+        <div class="tab-paineis">
+
+            <!-- CARDAPIO DA SEMANA -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">ℹ️ Clique em "Agendar" para reservar sua refeição. Você pode agendar mais de um dia</p>
+
+                {% if cardapio_semana %}
+                {% set nutricao_por_dia = {
+                    'Segunda-feira': {'kcal': '480', 'proteinas': '32g', 'carboidratos': '48g'},
+                    'Terça-feira': {'kcal': '520', 'proteinas': '16g', 'carboidratos': '78g'},
+                    'Quarta-feira': {'kcal': '540', 'proteinas': '35g', 'carboidratos': '52g'},
+                    'Quinta-feira': {'kcal': '460', 'proteinas': '30g', 'carboidratos': '45g'},
+                    'Sexta-feira': {'kcal': '580', 'proteinas': '34g', 'carboidratos': '50g'}
+                } %}
+                <div class="cardapio-grid">
+                    {% for item in cardapio_semana %}
+                    <div class="cardapio-card">
+                        {% if item.dia_semana == 'Segunda-feira' %}
+                        <img src="{{ url_for('static', filename='segunda.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
+                        {% elif item.dia_semana == 'Terça-feira' %}
+                        <img src="{{ url_for('static', filename='terca.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
+                        {% elif item.dia_semana == 'Quarta-feira' %}
+                        <img src="{{ url_for('static', filename='quarta.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
+                        {% elif item.dia_semana == 'Quinta-feira' %}
+                        <img src="{{ url_for('static', filename='quinta.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
+                        {% elif item.dia_semana == 'Sexta-feira' %}
+                        <img src="{{ url_for('static', filename='sexta.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
+                        {% endif %}
+                        <div class="cardapio-card-body">
+                            <a href="{{ url_for('agendar', id_cardapio=item.id_cardapio) }}" class="btn-agendar">➕ Agendar refeição</a>
+
+                            {% set nutri = nutricao_por_dia.get(item.dia_semana) %}
+                            {% if nutri %}
+                            <div class="cardapio-nutricao">
+                                <span class="cardapio-nutricao-titulo">📊 Valor nutricional estimado</span>
+                                <div class="cardapio-nutricao-itens">
+                                    <div class="nutri-item">
+                                        <span class="nutri-icone">🔥</span>
+                                        <span class="nutri-valor">{{ nutri.kcal }}</span>
+                                        <span class="nutri-label">kcal</span>
+                                    </div>
+                                    <div class="nutri-item">
+                                        <span class="nutri-icone">🥩</span>
+                                        <span class="nutri-valor">{{ nutri.proteinas }}</span>
+                                        <span class="nutri-label">proteína</span>
+                                    </div>
+                                    <div class="nutri-item">
+                                        <span class="nutri-icone">🌾</span>
+                                        <span class="nutri-valor">{{ nutri.carboidratos }}</span>
+                                        <span class="nutri-label">carboidrato</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">🍲</span>
+                    Nenhuma refeição cadastrada no momento.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- MEUS AGENDAMENTOS -->
+            <div class="tab-conteudo">
+                {% if agendamentos %}
+                <div class="tabela-container">
+                    <table class="tabela-dados">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Dia da Semana</th>
+                                <th>Refeição</th>
+                                <th>Data do Agendamento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ag in agendamentos %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ ag.dia_semana }}</strong></td>
+                                <td>{{ ag.refeicao_principal }}</td>
+                                <td>{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
+                                <td>
+                                    {% if ag.status_reserva == 'confirmado' %}
+                                        <span class="badge badge-verde">✔ Confirmado</span>
+                                    {% else %}
+                                        <span class="badge badge-vermelho">{{ ag.status_reserva }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('cancelar_agendamento', id_reserva=ag.id_grid_reserva) }}">
+                                        <button type="submit" class="btn-cancelar">❌ Cancelar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">📅</span>
+                    <p style="font-weight:bold; margin-bottom:6px;">Nenhum agendamento ainda</p>
+                    <p style="font-size:13px;">Acesse a aba "Cardápio da Semana" e reserve sua refeição.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- SAUDE E RESTRICOES -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">❤️ Conte pra Nutri se você tem alguma restrição alimentar</p>
+
+                <div class="form-painel">
+                    <form method="POST" action="{{ url_for('salvar_saude') }}" enctype="multipart/form-data">
+
+                        <div class="campo">
+                            <label>Marque suas comorbidades e restrições alimentares:</label>
+                            <div class="checkbox-grid">
+                                {% for opcao in lista_comorbidades %}
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="comorbidades" value="{{ opcao }}"
+                                        {% if opcao in marcadas %}checked{% endif %}>
+                                    {{ opcao }}
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="campo">
+                            <label for="atestado_arquivo">📄 Anexar Atestado Médico (PDF ou Imagem):</label>
+                            <input type="file" name="atestado_arquivo" id="atestado_arquivo">
+                        </div>
+
+                        <button type="submit" class="btn-cadastrar">💾 Salvar Informações de Saúde</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CONTEUDO: AVISOS (4a aba) -->
+            <div class="tab-conteudo">
+                {% if avisos %}
+                <div class="lista-avisos-painel">
+                    {% for aviso in avisos %}
+                    <div class="aviso-card">
+                        <span class="aviso-card-icone">
+                            {% if aviso.tipo_icone == 'star' %}⭐
+                            {% elif aviso.tipo_icone == 'info' %}ℹ️
+                            {% elif aviso.tipo_icone == 'leaf' %}🌿
+                            {% elif aviso.tipo_icone == 'clock' %}⏰
+                            {% else %}🔔
+                            {% endif %}
+                        </span>
+                        <div>
+                            <span class="aviso-card-titulo">{{ aviso.titulo }}</span>
+                            <p class="aviso-card-texto">{{ aviso.conteudo }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">🔔</span>
+                    Nenhum aviso no momento.
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital</span>
+            <a href="{{ url_for('home') }}" style="color:#cfe3f7;">Voltar ao Início</a>
+        </div>
+    </footer>
+
+</body>
+</html>

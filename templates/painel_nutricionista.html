@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel da Nutricionista - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">🥗</div>
+                <span class="brand-name">Espaço da Nutrição</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+                <a href="#" class="active">Controle Geral</a>
+            </nav>
+            <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
+        </div>
+    </header>
+
+    <!-- Cabecalho do painel -->
+    <div class="painel-header">
+        <div>
+            <h1 class="painel-titulo">🥗 Painel da Nutricionista</h1>
+            <p class="painel-subtitulo">Bem-vinda, {{ session.get('perfil', 'Nutricionista')|capitalize }}. Acompanhe a saúde e a adesão dos alunos.</p>
+        </div>
+    </div>
+
+    <!-- Cards de Estatistica -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">🧑‍🎓</span>
+            <div>
+                <div class="stat-numero">{{ total_alunos if total_alunos is defined else '—' }}</div>
+                <div class="stat-label">Alunos Cadastrados</div>
+            </div>
+        </div>
+        <div class="stat-card verde">
+            <span class="stat-icon">📅</span>
+            <div>
+                <div class="stat-numero" style="color:#1f8a4c;">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
+                <div class="stat-label">Total de Agendamentos</div>
+            </div>
+        </div>
+        <div class="stat-card amber">
+            <span class="stat-icon">❤️</span>
+            <div>
+                <div class="stat-numero" style="color:#d98c0f;">{{ ficha_saude|length if ficha_saude is defined else '—' }}</div>
+                <div class="stat-label">Alunos com Restrição</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ABAS ===== -->
+    <div class="tab-grupo">
+
+        <input type="radio" name="aba-nutri" id="aba-saude" class="tab-radio" checked>
+        <input type="radio" name="aba-nutri" id="aba-estatisticas" class="tab-radio">
+
+        <div class="tab-nav">
+            <label for="aba-saude" class="tab-label">❤️ Comorbidades e Restrições</label>
+            <label for="aba-estatisticas" class="tab-label">📊 Estatísticas de Adesão</label>
+        </div>
+
+        <div class="tab-paineis">
+
+            <!-- COMORBIDADES E RESTRICOES -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">❤️ Alunos que preencheram alguma comorbidade ou atestado médico</p>
+
+                {% if ficha_saude %}
+                <div class="tabela-container">
+                    <table class="tabela-dados">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Turma</th>
+                                <th>Comorbidades</th>
+                                <th>Atestado Médico</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aluno in ficha_saude %}
+                            <tr>
+                                <td><strong>{{ aluno.nome }}</strong></td>
+                                <td><span class="badge badge-azul">{{ aluno.turma }}</span></td>
+                                <td>
+                                    {% if aluno.comorbidades %}
+                                        <span class="badge badge-amber">{{ aluno.comorbidades }}</span>
+                                    {% else %}
+                                        <span class="sem-itens">Nenhuma</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if aluno.atestado_arquivo %}
+                                        {{ aluno.atestado_arquivo }}
+                                    {% else %}
+                                        <span class="sem-itens">Não enviado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">❤️</span>
+                    Nenhum aluno preencheu comorbidades ou atestado até o momento.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ESTATISTICAS -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">📊 Relatório de Adesão à Merenda por Dia</p>
+
+                {% if relatorio_agend %}
+                <div class="form-painel">
+                    {% for item in relatorio_agend %}
+                    <div class="grafico-barra-linha">
+                        <div class="grafico-barra-topo">
+                            <span class="grafico-barra-label">{{ item.dia_semana }}</span>
+                            <span class="grafico-barra-valor
+                                {% if item.total_agendamentos >= 3 %}cor-alta
+                                {% elif item.total_agendamentos >= 1 %}cor-media
+                                {% else %}cor-baixa{% endif %}">
+                                {{ item.total_agendamentos }} aluno(s)
+                            </span>
+                        </div>
+                        {% set largura = item.percentual if item.percentual is defined else 0 %}
+                        <div class="grafico-barra-trilha">
+                            <div class="grafico-barra-preenchimento
+                                {% if item.total_agendamentos >= 3 %}fundo-alta
+                                {% elif item.total_agendamentos >= 1 %}fundo-media
+                                {% else %}fundo-baixa{% endif %}"
+                                style="width: {{ largura }}%;">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="resumo-relatorio">
+                        <div class="resumo-item">
+                            <div class="resumo-item-label">Total de Alunos</div>
+                            <div class="resumo-item-valor">{{ total_alunos if total_alunos is defined else '—' }}</div>
+                        </div>
+                        <div class="resumo-item">
+                            <div class="resumo-item-label">Total Agendamentos</div>
+                            <div class="resumo-item-valor" style="color:#1f8a4c;">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="legenda-cores">
+                    <strong>Legenda:</strong>
+                    <span><span class="cor-alta">●</span> 3 ou mais agendamentos</span>
+                    <span><span class="cor-media">●</span> 1 a 2 agendamentos</span>
+                    <span><span class="cor-baixa">●</span> Sem agendamentos</span>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">📊</span>
+                    Nenhum dado de agendamento disponível.
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital — Área da Nutricionista</span>
+        </div>
+    </footer>
+
+</body>
+</html>

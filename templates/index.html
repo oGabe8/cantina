@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Barra de autenticação (login do aluno fica aqui) -->
+    <div class="auth-bar">
+        {% if session.get('id_aluno') %}
+            <span class="welcome-msg">Olá, {{ session.get('nome_aluno') }}!</span>
+            <a href="{{ url_for('painel_aluno') }}" class="auth-btn">📅 Meu Painel</a>
+            <a href="{{ url_for('logout') }}" class="auth-btn vermelho">🚪 Sair</a>
+        {% else %}
+            <form class="auth-form" method="POST" action="{{ url_for('login') }}">
+                <input type="text" name="matricula" placeholder="Matrícula" required>
+                <input type="password" name="senha" placeholder="Senha" required>
+                <button type="submit" class="auth-btn">Entrar</button>
+            </form>
+            <a href="{{ url_for('cadastro') }}" class="auth-btn verde">📝 Cadastrar Aluno</a>
+            <span class="auth-separador"></span>
+            <a href="{{ url_for('login_admin') }}" class="auth-restrita">🛡️ Área Restrita</a>
+        {% endif %}
+    </div>
+
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Cabecalho com a logo -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">🍚</div>
+                <span class="brand-name">Cantina Digital</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}" class="active">Início</a>
+                <a href="#cardapio">Cardápio</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Banner da cozinheira -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Merenda de Qualidade para Todos os Alunos<br>
+                <p class="hero-subtitle">Alimentando o futuro com Nutrição e Cuidado</p>
+                <a href="#cardapio" class="btn-primary">Ver Cardápio</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Próxima Refeição e Avisos lado a lado -->
+    <section class="proximas-secao">
+        <div class="proximas-grid">
+
+            <!-- próx refeição -->
+            <div class="proxima-refeicao-card">
+                <h2 class="section-title">🍝 Próxima Refeição</h2>
+                {% if cardapio %}
+                    {% set proxima = cardapio[0] %}
+                    <div class="proxima-refeicao-corpo">
+                        {% if proxima.dia_semana == 'Segunda-feira' %}
+                        <img src="{{ url_for('static', filename='segunda.png') }}" alt="{{ proxima.refeicao_principal }}" class="proxima-refeicao-img">
+                        {% elif proxima.dia_semana == 'Terça-feira' %}
+                        <img src="{{ url_for('static', filename='terca.png') }}" alt="{{ proxima.refeicao_principal }}" class="proxima-refeicao-img">
+                        {% elif proxima.dia_semana == 'Quarta-feira' %}
+                        <img src="{{ url_for('static', filename='quarta.png') }}" alt="{{ proxima.refeicao_principal }}" class="proxima-refeicao-img">
+                        {% elif proxima.dia_semana == 'Quinta-feira' %}
+                        <img src="{{ url_for('static', filename='quinta.png') }}" alt="{{ proxima.refeicao_principal }}" class="proxima-refeicao-img">
+                        {% elif proxima.dia_semana == 'Sexta-feira' %}
+                        <img src="{{ url_for('static', filename='sexta.png') }}" alt="{{ proxima.refeicao_principal }}" class="proxima-refeicao-img">
+                        {% endif %}
+                        <div class="proxima-refeicao-info">
+                            <span class="proxima-refeicao-dia">{{ proxima.dia_semana }}</span>
+
+                            {% if proxima.acompanhamentos %}
+                            <p class="proxima-refeicao-acomp">
+                                <span class="acomp-icone">🥩</span> {{ proxima.acompanhamentos }}
+                            </p>
+                            {% endif %}
+
+                            {% if proxima.fruta_sobremesa %}
+                                {% set partes_sobremesa = proxima.fruta_sobremesa.split(' ', 1) %}
+                                <span class="sobremesa-badge">
+                                    <span class="sobremesa-icone">{{ partes_sobremesa[0] }}</span>
+                                    <span class="sobremesa-texto">
+                                        <span class="sobremesa-label">Sobremesa</span>
+                                        <span class="sobremesa-nome">{{ partes_sobremesa[1] if partes_sobremesa|length > 1 else partes_sobremesa[0] }}</span>
+                                    </span>
+                                </span>
+                            {% endif %}
+
+                            <a href="{{ url_for('painel_aluno') }}" class="btn-secondary">Ver Cardápio Completo</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="sem-itens">Nenhuma refeição cadastrada no momento.</p>
+                {% endif %}
+            </div>
+
+            <!-- Avis Importantes -->
+            <div class="avisos-mini-card">
+                <h2 class="section-title">🔔 Avisos Importantes</h2>
+                <ul class="avisos-mini-list">
+                    {% if avisos %}
+                        {% for aviso in avisos %}
+                        <li>
+                            <span class="avisos-mini-icone">
+                                {% if aviso.tipo_icone == 'star' %}⭐
+                                {% elif aviso.tipo_icone == 'info' %}ℹ️
+                                {% elif aviso.tipo_icone == 'leaf' %}🌿
+                                {% elif aviso.tipo_icone == 'clock' %}⏰
+                                {% else %}🔔
+                                {% endif %}
+                            </span>
+                            <span><strong>{{ aviso.titulo }}:</strong> {{ aviso.conteudo }}</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="sem-itens">Nenhum aviso publicado no momento.</li>
+                    {% endif %}
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Gestao da cantina -->
+    <section class="management-section">
+        <h2 class="management-header">Gestão da Cantina</h2>
+        <div class="management-grid">
+            <div class="management-card">
+                <img src="{{ url_for('static', filename='controle_de_estoque.png') }}" alt="Controle de Estoque" class="manage-icon-img">
+                <h3 class="manage-title">Controle de Estoque</h3>
+                <p class="manage-subtitle">Gerenciado pela equipe administrativa</p>
+            </div>
+            <div class="management-card">
+                <img src="{{ url_for('static', filename='registro_de_alunos.png') }}" alt="Registro de Alunos" class="manage-icon-img">
+                <h3 class="manage-title">Registro de Alunos</h3>
+                <p class="manage-subtitle">Cadastro e acompanhamento escolar</p>
+            </div>
+            <div class="management-card">
+                <img src="{{ url_for('static', filename='relatorios_e_estatisticas.png') }}" alt="Relatórios e Estatísticas" class="manage-icon-img">
+                <h3 class="manage-title">Relatórios e Estatísticas</h3>
+                <p class="manage-subtitle">Acompanhamento da adesão à merenda</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="benefits-bar">
+            <div class="benefits-container">
+                <span>🔹 Alimentação Saudável</span>
+                <span>🔹 Suporte Eficiente</span>
+                <span>🔹 Acesso Seguro</span>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital</span>
+            <div class="footer-links">
+                <a href="#">Política de Privacidade</a>
+                <a href="#">Contato</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

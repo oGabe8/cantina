@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Aluno - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">🍽️</div>
+                <span class="brand-name">Cantina Digital</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Cadastro do Aluno -->
+    <div class="cadastro-wrapper">
+        <div class="cadastro-card">
+
+            <div class="login-logo">📝</div>
+            <h1 class="cadastro-titulo">Cadastrar Aluno</h1>
+            <p class="cadastro-sub">Preencha os dados para criar seu acesso</p>
+
+            <!-- Mensagens Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('cadastro') }}">
+
+                <div class="campo">
+                    <label for="nome">🧑‍🎓 Nome Completo</label>
+                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required autofocus>
+                </div>
+
+                <div class="campo">
+                    <label for="matricula">📋 Matrícula</label>
+                    <input type="text" id="matricula" name="matricula" placeholder="Crie uma matrícula" required>
+                </div>
+
+                <div class="campo">
+                    <label for="senha">🔐 Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required>
+                </div>
+
+                <div class="campo">
+                    <label for="turma">🏫 Turma</label>
+                    <select id="turma" name="turma" required>
+                        <option value="" disabled selected>Selecione sua turma</option>
+                        <option value="1º ANO A">1º ANO A</option>
+                        <option value="1º ANO B">1º ANO B</option>
+                        <option value="1º ANO C">1º ANO C</option>
+                        <option value="2º ANO A">2º ANO A</option>
+                        <option value="2º ANO B">2º ANO B</option>
+                        <option value="2º ANO C">2º ANO C</option>
+                        <option value="3º ANO A">3º ANO A</option>
+                        <option value="3º ANO B">3º ANO B</option>
+                        <option value="3º ANO C">3º ANO C</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-cadastrar">Cadastrar</button>
+
+            </form>
+
+            <a href="{{ url_for('home') }}" class="voltar-link">← Voltar para a Home</a>
+
+        </div>
+    </div>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital</span>
+            <span style="color:#cfe3f7;">💬 Alimentação Saudável · ❤️ Suporte Eficiente · 🔒 Acesso Seguro</span>
+        </div>
+    </footer>
+
+</body>
+</html>

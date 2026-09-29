@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área Restrita - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">🍚</div>
+                <span class="brand-name">Cantina Digital</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+                <a href="{{ url_for('login_admin') }}" class="active">Área Restrita</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Admin -->
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <div class="login-logo">🛡️</div>
+            <h1 class="login-titulo">Área Restrita</h1>
+            <p class="login-subtitulo">Acesso exclusivo para Administradores e Nutricionistas</p>
+
+            <!-- Msg Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login_admin') }}">
+
+                <div class="login-campo">
+                    <label for="login">🧑‍💼👧 Usuário</label>
+                    <input type="text" id="login" name="login" placeholder="Digite seu usuário" required autofocus>
+                </div>
+
+                <div class="login-campo">
+                    <label for="senha">🔐 Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="btn-login">Acessar Painel</button>
+
+            </form>
+
+            <a href="{{ url_for('home') }}" class="login-voltar">← Voltar para a Home</a>
+
+        </div>
+    </div>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital</span>
+            <span style="color:#cfe3f7;">💬 Alimentação Saudável · ❤️ Suporte Eficiente · 🔒 Acesso Seguro</span>
+        </div>
+    </footer>
+
+</body>
+</html>
