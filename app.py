@@ -247,7 +247,7 @@ def agendar(id_cardapio):
         conexao.commit()
         cursor.close()
         conexao.close()
-        flash('Refeição agendada com sucesso!', 'Sucesso')
+        flash('Refeição agendada com sucesso!', 'sucesso')
     except Exception as e:
         print(e)
         flash('Não foi possível agendar agora. Tente novamente.', 'erro')
