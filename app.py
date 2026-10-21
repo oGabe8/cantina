@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
+import os 
+
 
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_cantina'
@@ -8,13 +10,17 @@ app.secret_key = 'chave_secreta_cantina'
 LISTA_COMORBIDADES = ['Diabetes', 'Intolerancia a Lactose', 'Alergia a Amendoim', 'Doenca Celiaca', 'Hipertensao']
 
 
-#conexao com o bd
+# conexao com o bd adaptada para a nuvem e para o seu PC
+import os
 def conectar_bd():
     return mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='',
-        database='cantina')
+        host=os.environ.get('DB_HOST', 'cantinamysql-cantina-d8d3.h.aivencloud.com'),
+        port=int(os.environ.get('DB_PORT', 10856)),
+        user=os.environ.get('DB_USER', 'avnadmin'),
+        password=os.environ.get('DB_PASSWORD', 'AVNS_xfNqGnGBu5lqIbw5TPZ'),
+        database=os.environ.get('DB_NAME', 'defaultdb'),
+         ssl_disabled=False)
+
 
 
 def calcular_percentual(lista, chave):
@@ -447,6 +453,6 @@ def logout():
     return redirect(url_for('home'))
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
