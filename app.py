@@ -19,7 +19,9 @@ def conectar_bd():
         user=os.environ.get('DB_USER', 'avnadmin'),
         password=os.environ.get('DB_PASSWORD', 'AVNS_xfNqGnGBu5lqIbw5TPZ'),
         database=os.environ.get('DB_NAME', 'defaultdb'),
-         ssl_disabled=False)
+        ssl_disabled=False,
+        charset='utf8mb4',
+        collation='utf8mb4_unicode_ci')
 
 
 
