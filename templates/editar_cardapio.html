@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Cardápio - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">⚙️</div>
+                <span class="brand-name">Painel Administrativo</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+                <a href="{{ url_for('painel_admin', _anchor='cardapio') }}" class="active">Controle Geral</a>
+            </nav>
+            <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
+        </div>
+    </header>
+
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Cabecalho da pagina -->
+    <div class="painel-header">
+        <div>
+            <h1 class="painel-titulo">🍲 Editar Cardápio</h1>
+            <p class="painel-subtitulo">{{ item.dia_semana }}</p>
+        </div>
+    </div>
+
+    <!-- Formulario de edicao -->
+    <div class="form-painel" style="margin: 0 40px 20px 40px;">
+        <form method="POST" action="{{ url_for('editar_cardapio', id_cardapio=item.id_cardapio) }}">
+            <div class="campo">
+                <label for="refeicao_principal">🍽️ Refeição Principal</label>
+                <input type="text" id="refeicao_principal" name="refeicao_principal" maxlength="80" value="{{ item.refeicao_principal }}" required>
+                <small>A foto do dia e o valor nutricional estimado (tela do aluno) não mudam com este texto.</small>
+            </div>
+            <div class="campo">
+                <label for="acompanhamentos">🥗 Acompanhamentos</label>
+                <input type="text" id="acompanhamentos" name="acompanhamentos" maxlength="60" value="{{ item.acompanhamentos or '' }}" placeholder="Ex: Arroz, Feijão e Salada verde">
+            </div>
+            <div class="campo">
+                <label for="emoji">🍌 Emoji da Sobremesa</label>
+                <select id="emoji" name="emoji">
+                    {% for emoji, rotulo in opcoes_emoji %}
+                    <option value="{{ emoji }}" {% if emoji == emoji_atual %}selected{% endif %}>{{ emoji }} {{ rotulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="campo">
+                <label for="nome_sobremesa">🍮 Nome da Sobremesa</label>
+                <input type="text" id="nome_sobremesa" name="nome_sobremesa" maxlength="50" value="{{ nome_atual }}" placeholder="Ex: Banana (deixe vazio para não ter sobremesa)">
+            </div>
+            <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
+            <a href="{{ url_for('painel_admin', _anchor='cardapio') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
+        </form>
+    </div>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital — Área Administrativa</span>
+        </div>
+    </footer>
+
+</body>
+</html>

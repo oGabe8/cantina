@@ -23,6 +23,15 @@
         </div>
     </header>
 
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <!-- Cabecalho do painel -->
     <div class="painel-header">
         <div>
@@ -61,11 +70,17 @@
 
         <input type="radio" name="aba-admin" id="aba-alunos" class="tab-radio" checked>
         <input type="radio" name="aba-admin" id="aba-estoque" class="tab-radio">
+        <input type="radio" name="aba-admin" id="aba-agendamentos" class="tab-radio">
+        <input type="radio" name="aba-admin" id="aba-avisos" class="tab-radio">
+        <input type="radio" name="aba-admin" id="aba-cardapio" class="tab-radio">
         <input type="radio" name="aba-admin" id="aba-estatisticas" class="tab-radio">
 
         <div class="tab-nav">
             <label for="aba-alunos" class="tab-label">🧑‍🎓 Alunos Cadastrados</label>
             <label for="aba-estoque" class="tab-label">📦 Controle de Estoque</label>
+            <label for="aba-agendamentos" class="tab-label">📅 Agendamentos</label>
+            <label for="aba-avisos" class="tab-label">🔔 Avisos</label>
+            <label for="aba-cardapio" class="tab-label">🍲 Cardápio</label>
             <label for="aba-estatisticas" class="tab-label">📊 Estatísticas de Agendamento</label>
         </div>
 
@@ -82,6 +97,7 @@
                                 <th>Matrícula</th>
                                 <th>Turma</th>
                                 <th>Status</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,6 +112,15 @@
                                     {% else %}
                                         <span class="badge badge-vermelho">{{ aluno.status_cadastro }}</span>
                                     {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                        <a href="{{ url_for('editar_aluno', id_aluno=aluno.id_aluno) }}" class="btn-editar">✏️ Editar</a>
+                                        <form method="POST" action="{{ url_for('excluir_aluno', id_aluno=aluno.id_aluno) }}"
+                                              onsubmit="return confirm('Excluir este aluno? Os agendamentos dele também serão apagados.');">
+                                            <button type="submit" class="btn-cancelar">❌ Excluir</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -198,6 +223,8 @@
                         {% endif %}
                     </td>
                     <td>
+                        <a href="{{ url_for('editar_estoque', id_item=item.id_item) }}" class="btn-editar"
+                           style="margin-bottom:6px;">✏️ Editar</a>
                         <form method="POST" action="{{ url_for('excluir_estoque', id_item=item.id_item) }}"
                               onsubmit="return confirm('Excluir este item do estoque?');">
                             <button type="submit" class="btn-cancelar">❌ Excluir</button>
@@ -219,6 +246,191 @@
     </div>
     {% endif %}
 </div>
+
+            <!-- AGENDAMENTOS -->
+            <div class="tab-conteudo">
+                {% if agendamentos %}
+                <div class="campo" style="max-width:360px; margin-bottom:16px;">
+                    <label for="busca_agendamento">🔍 Pesquisar por aluno</label>
+                    <input type="text" id="busca_agendamento" placeholder="Digite o nome do aluno..." onkeyup="filtrarAgendamentos()" autocomplete="off">
+                </div>
+                <div class="tabela-container">
+                    <table class="tabela-dados" id="tabela_agendamentos">
+                        <thead>
+                            <tr>
+                                <th>Aluno</th>
+                                <th>Turma</th>
+                                <th>Dia da Semana</th>
+                                <th>Refeição</th>
+                                <th>Agendado em</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ag in agendamentos %}
+                            <tr data-nome="{{ ag.nome|lower }}">
+                                <td><strong>{{ ag.nome }}</strong></td>
+                                <td><span class="badge badge-azul">{{ ag.turma }}</span></td>
+                                <td>{{ ag.dia_semana }}</td>
+                                <td>{{ ag.refeicao_principal }}</td>
+                                <td>{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
+                                <td>
+                                    {% if ag.status_reserva|lower == 'confirmado' %}
+                                        <span class="badge badge-verde">✔ Confirmado</span>
+                                    {% else %}
+                                        <span class="badge badge-vermelho">{{ ag.status_reserva }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin_cancelar_agendamento', id_reserva=ag.id_grid_reserva) }}"
+                                          onsubmit="return confirm('Cancelar este agendamento?');">
+                                        <button type="submit" class="btn-cancelar">❌ Cancelar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p id="msg_agendamento_vazio" class="tabela-vazio" style="display:none;">
+                    <span class="icone-vazio">🔍</span>
+                    Nenhum agendamento encontrado.
+                </p>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">📅</span>
+                    Nenhum agendamento feito até o momento.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- AVISOS -->
+            <div class="tab-conteudo">
+
+                <!-- Form de novo aviso -->
+                <div class="form-painel" style="margin-bottom:20px;">
+                    <form method="POST" action="{{ url_for('cadastrar_aviso') }}">
+                        <div class="campo">
+                            <label for="titulo_aviso">📝 Título</label>
+                            <input type="text" id="titulo_aviso" name="titulo" maxlength="100" placeholder="Ex: Novo horário do refeitório" required>
+                        </div>
+                        <div class="campo">
+                            <label for="conteudo_aviso">💬 Texto do aviso</label>
+                            <textarea id="conteudo_aviso" name="conteudo" rows="3" maxlength="500" placeholder="Escreva o aviso que os alunos vão ver" required></textarea>
+                        </div>
+                        <div class="campo">
+                            <label for="icone_aviso">🎨 Ícone</label>
+                            <select id="icone_aviso" name="tipo_icone">
+                                <option value="bell">🔔 Sino</option>
+                                <option value="star">⭐ Estrela</option>
+                                <option value="info">ℹ️ Informação</option>
+                                <option value="leaf">🌿 Folha</option>
+                                <option value="clock">⏰ Relógio</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-cadastrar">➕ Publicar Aviso</button>
+                    </form>
+                </div>
+
+                {% if avisos %}
+                <div class="tabela-container">
+                    <table class="tabela-dados">
+                        <thead>
+                            <tr>
+                                <th>Ícone</th>
+                                <th>Título</th>
+                                <th>Texto</th>
+                                <th>Publicado em</th>
+                                <th>Situação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aviso in avisos %}
+                            <tr>
+                                <td>
+                                    {% if aviso.tipo_icone == 'star' %}⭐
+                                    {% elif aviso.tipo_icone == 'info' %}ℹ️
+                                    {% elif aviso.tipo_icone == 'leaf' %}🌿
+                                    {% elif aviso.tipo_icone == 'clock' %}⏰
+                                    {% else %}🔔
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ aviso.titulo }}</strong></td>
+                                <td>{{ aviso.conteudo }}</td>
+                                <td>{{ aviso.data_publicacao.strftime('%d/%m/%Y às %H:%M') if aviso.data_publicacao else '-' }}</td>
+                                <td>
+                                    {% if aviso.ativo %}
+                                        <span class="badge badge-verde">✔ Publicado</span>
+                                    {% else %}
+                                        <span class="badge badge-amber">Oculto</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                        <form method="POST" action="{{ url_for('alternar_aviso', id_aviso=aviso.id_aviso) }}">
+                                            {% if aviso.ativo %}
+                                            <button type="submit" class="btn-form btn-amber">👁️ Ocultar</button>
+                                            {% else %}
+                                            <button type="submit" class="btn-form btn-verde">✔ Publicar</button>
+                                            {% endif %}
+                                        </form>
+                                        <form method="POST" action="{{ url_for('excluir_aviso', id_aviso=aviso.id_aviso) }}"
+                                              onsubmit="return confirm('Excluir este aviso de vez?');">
+                                            <button type="submit" class="btn-cancelar">❌ Excluir</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">🔔</span>
+                    Nenhum aviso cadastrado.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- CARDAPIO -->
+            <div class="tab-conteudo">
+                {% if cardapio %}
+                <div class="tabela-container">
+                    <table class="tabela-dados">
+                        <thead>
+                            <tr>
+                                <th>Dia</th>
+                                <th>Refeição Principal</th>
+                                <th>Acompanhamentos</th>
+                                <th>Sobremesa</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dia in cardapio %}
+                            <tr>
+                                <td><strong>{{ dia.dia_semana }}</strong></td>
+                                <td>{{ dia.refeicao_principal }}</td>
+                                <td>{{ dia.acompanhamentos or '-' }}</td>
+                                <td>{{ dia.fruta_sobremesa or '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('editar_cardapio', id_cardapio=dia.id_cardapio) }}" class="btn-editar">✏️ Editar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">🍲</span>
+                    Nenhum dia cadastrado no cardápio.
+                </div>
+                {% endif %}
+            </div>
 
             <!-- ESTATISTICAS -->
             <div class="tab-conteudo">
@@ -316,6 +528,40 @@
 
         document.getElementById('msg_estoque_vazio').style.display = encontrouAlgum ? 'none' : 'block';
     }
+
+    function filtrarAgendamentos() {
+        var termo = document.getElementById('busca_agendamento').value.trim().toLowerCase();
+        var linhas = document.querySelectorAll('#tabela_agendamentos tbody tr');
+        var encontrouAlgum = false;
+
+        linhas.forEach(function (linha) {
+            var nome = linha.getAttribute('data-nome');
+            if (nome.indexOf(termo) !== -1) {
+                linha.style.display = '';
+                encontrouAlgum = true;
+            } else {
+                linha.style.display = 'none';
+            }
+        });
+
+        document.getElementById('msg_agendamento_vazio').style.display = encontrouAlgum ? 'none' : 'block';
+    }
+
+    // abre a aba indicada na URL (ex.: /painel_admin#estoque), pra voltar na aba certa depois de uma ação
+    (function () {
+        var abas = {
+            alunos: 'aba-alunos',
+            estoque: 'aba-estoque',
+            agendamentos: 'aba-agendamentos',
+            avisos: 'aba-avisos',
+            cardapio: 'aba-cardapio',
+            estatisticas: 'aba-estatisticas'
+        };
+        var destino = abas[window.location.hash.replace('#', '')];
+        if (destino) {
+            document.getElementById(destino).checked = true;
+        }
+    })();
     </script>
 
 </body>

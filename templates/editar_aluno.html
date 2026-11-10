@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Aluno - Cantina Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Cabecalho -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">⚙️</div>
+                <span class="brand-name">Painel Administrativo</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}">Início</a>
+                <a href="{{ url_for('painel_admin', _anchor='alunos') }}" class="active">Controle Geral</a>
+            </nav>
+            <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
+        </div>
+    </header>
+
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Cabecalho da pagina -->
+    <div class="painel-header">
+        <div>
+            <h1 class="painel-titulo">🧑‍🎓 Editar Aluno</h1>
+            <p class="painel-subtitulo">{{ aluno.nome }}</p>
+        </div>
+    </div>
+
+    <!-- Formulario de edicao -->
+    <div class="form-painel" style="margin: 0 40px 20px 40px;">
+        <form method="POST" action="{{ url_for('editar_aluno', id_aluno=aluno.id_aluno) }}">
+            <div class="campo">
+                <label for="nome">🧑‍🎓 Nome Completo</label>
+                <input type="text" id="nome" name="nome" maxlength="80" value="{{ aluno.nome }}" required>
+            </div>
+            <div class="campo">
+                <label for="matricula">📋 Matrícula</label>
+                <input type="text" id="matricula" name="matricula" maxlength="12" value="{{ aluno.matricula }}" required>
+            </div>
+            <div class="campo">
+                <label for="senha">🔐 Nova Senha</label>
+                <input type="text" id="senha" name="senha" maxlength="12" placeholder="Deixe em branco para manter a senha atual" autocomplete="off">
+            </div>
+            <div class="campo">
+                <label for="turma">🏫 Turma</label>
+                <select id="turma" name="turma" required>
+                    {% for turma in turmas %}
+                    <option value="{{ turma }}" {% if turma == aluno.turma %}selected{% endif %}>{{ turma }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="campo">
+                <label for="status_cadastro">✅ Situação do Cadastro</label>
+                <select id="status_cadastro" name="status_cadastro">
+                    <option value="ativo" {% if status_atual == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status_atual == 'inativo' %}selected{% endif %}>Inativo (não consegue entrar no sistema)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
+            <a href="{{ url_for('painel_admin', _anchor='alunos') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
+        </form>
+    </div>
+
+    <!-- Rodape -->
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cantina Digital — Área Administrativa</span>
+        </div>
+    </footer>
+
+</body>
+</html>
