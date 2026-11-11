@@ -241,8 +241,10 @@ header.main-header {
 .logo-box {
     background-color: var(--branco);
     color: var(--azul-escuro);
-    width: 38px;
+    min-width: 38px;
     height: 38px;
+    padding: 0 8px;
+    white-space: nowrap;
     border-radius: var(--raio-sm);
     display: flex;
     align-items: center;
