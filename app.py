@@ -354,10 +354,14 @@ def painel_admin():
     except Exception as e:
         print(e)
 
+    #notas fiscais que realmente existem na pasta static/notas_fiscais (so essas ganham o botao "Ver nota")
+    pasta_notas = os.path.join(app.static_folder, 'notas_fiscais')
+    notas_disponiveis = os.listdir(pasta_notas) if os.path.isdir(pasta_notas) else []
+
     return render_template(
     'painel_admin.html', alunos=alunos, estoque=estoque, total_alunos=total_alunos, 
     total_agendamentos=total_agendamentos, total_itens_estoque=len(estoque), relatorio_agend=relatorio_agend,
-    agendamentos=agendamentos, avisos=avisos, cardapio=cardapio)
+    agendamentos=agendamentos, avisos=avisos, cardapio=cardapio, notas_disponiveis=notas_disponiveis)
 
 
 #8.1 rota p o admin cancelar o agendamento de qualquer aluno
@@ -474,8 +478,11 @@ EMOJIS_SOBREMESA = [
 
 @app.route('/cardapio/editar/<int:id_cardapio>', methods=['GET', 'POST'])
 def editar_cardapio(id_cardapio):
-    if session.get('perfil') != 'admin':
+    perfil = session.get('perfil')
+    if perfil not in ('admin', 'nutricionista'):
         return redirect(url_for('login_admin'))
+    #cada perfil volta pro seu proprio painel
+    painel_destino = 'painel_admin' if perfil == 'admin' else 'painel_nutricionista'
 
     if request.method == 'POST':
         refeicao = request.form.get('refeicao_principal', '').strip()[:80]
@@ -505,7 +512,7 @@ def editar_cardapio(id_cardapio):
             cursor.close()
             conexao.close()
             flash('Cardápio atualizado com sucesso.', 'sucesso')
-            return redirect(url_for('painel_admin', _anchor='cardapio'))
+            return redirect(url_for(painel_destino, _anchor='cardapio'))
         except Exception as e:
             print(e)
             flash('Erro ao atualizar o cardápio.', 'erro')
@@ -525,7 +532,7 @@ def editar_cardapio(id_cardapio):
 
     if not item:
         flash('Dia do cardápio não encontrado.', 'erro')
-        return redirect(url_for('painel_admin', _anchor='cardapio'))
+        return redirect(url_for(painel_destino, _anchor='cardapio'))
 
     #separa "emoji nome" nas duas partes do formulario
     partes = (item['fruta_sobremesa'] or '').split(' ', 1)
@@ -542,7 +549,7 @@ def editar_cardapio(id_cardapio):
         opcoes_emoji.insert(0, (emoji_atual, ''))
 
     return render_template('editar_cardapio.html', item=item, opcoes_emoji=opcoes_emoji,
-                           emoji_atual=emoji_atual, nome_atual=nome_atual)
+                           emoji_atual=emoji_atual, nome_atual=nome_atual, painel_destino=painel_destino)
 
 
 #8.6 rota p editar os dados de um aluno (GET mostra o formulario, POST salva)
@@ -659,12 +666,16 @@ def painel_nutricionista():
 
     ficha_saude = []
     relatorio_agend = []
+    cardapio = []
     total_alunos = 0
     total_agendamentos = 0
 
     try:
         conexao = conectar_bd()
         cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute("select * from cardapio order by id_cardapio")
+        cardapio = cursor.fetchall()
 
         cursor.execute("select count(*) as total from alunos")
         total_alunos = cursor.fetchone()['total']
@@ -695,7 +706,7 @@ def painel_nutricionista():
         print(e)
 
     return render_template('painel_nutricionista.html', ficha_saude=ficha_saude, relatorio_agend=relatorio_agend,
-    total_alunos=total_alunos, total_agendamentos=total_agendamentos)
+    total_alunos=total_alunos, total_agendamentos=total_agendamentos, cardapio=cardapio)
 
 
 #10. rota de redirecionamento do card estoque

@@ -13,11 +13,11 @@
         <div class="header-container">
             <div class="logo-area">
                 <div class="logo-box">⚙️</div>
-                <span class="brand-name">Painel Administrativo</span>
+                <span class="brand-name">{% if painel_destino == 'painel_nutricionista' %}Espaço da Nutrição{% else %}Painel Administrativo{% endif %}</span>
             </div>
             <nav class="main-nav">
                 <a href="{{ url_for('home') }}">Início</a>
-                <a href="{{ url_for('painel_admin', _anchor='cardapio') }}" class="active">Controle Geral</a>
+                <a href="{{ url_for(painel_destino, _anchor='cardapio') }}" class="active">Controle Geral</a>
             </nav>
             <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
         </div>
@@ -65,7 +65,7 @@
                 <input type="text" id="nome_sobremesa" name="nome_sobremesa" maxlength="50" value="{{ nome_atual }}" placeholder="Ex: Banana (deixe vazio para não ter sobremesa)">
             </div>
             <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
-            <a href="{{ url_for('painel_admin', _anchor='cardapio') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
+            <a href="{{ url_for(painel_destino, _anchor='cardapio') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
         </form>
     </div>
 

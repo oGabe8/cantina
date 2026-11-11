@@ -23,6 +23,15 @@
         </div>
     </header>
 
+    <!-- Msg Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <!-- Cabecalho do painel -->
     <div class="painel-header">
         <div>
@@ -61,10 +70,12 @@
 
         <input type="radio" name="aba-nutri" id="aba-saude" class="tab-radio" checked>
         <input type="radio" name="aba-nutri" id="aba-estatisticas" class="tab-radio">
+        <input type="radio" name="aba-nutri" id="aba-cardapio" class="tab-radio">
 
         <div class="tab-nav">
             <label for="aba-saude" class="tab-label">❤️ Comorbidades e Restrições</label>
             <label for="aba-estatisticas" class="tab-label">📊 Estatísticas de Adesão</label>
+            <label for="aba-cardapio" class="tab-label">🍲 Cardápio</label>
         </div>
 
         <div class="tab-paineis">
@@ -171,6 +182,44 @@
                 {% endif %}
             </div>
 
+            <!-- CARDAPIO -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">🍲 Cardápio da semana: clique em Editar para ajustar um dia</p>
+                {% if cardapio %}
+                <div class="tabela-container">
+                    <table class="tabela-dados">
+                        <thead>
+                            <tr>
+                                <th>Dia</th>
+                                <th>Refeição Principal</th>
+                                <th>Acompanhamentos</th>
+                                <th>Sobremesa</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dia in cardapio %}
+                            <tr>
+                                <td><strong>{{ dia.dia_semana }}</strong></td>
+                                <td>{{ dia.refeicao_principal }}</td>
+                                <td>{{ dia.acompanhamentos or '-' }}</td>
+                                <td>{{ dia.fruta_sobremesa or '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('editar_cardapio', id_cardapio=dia.id_cardapio) }}" class="btn-editar">✏️ Editar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">🍲</span>
+                    Nenhum dia cadastrado no cardápio.
+                </div>
+                {% endif %}
+            </div>
+
         </div>
     </div>
 
@@ -180,6 +229,15 @@
             <span>&copy; 2026 Cantina Digital — Área da Nutricionista</span>
         </div>
     </footer>
+
+    <script>
+    // abre a aba indicada na URL (ex.: /painel_nutricionista#cardapio), pra voltar na aba certa depois de editar
+    (function () {
+        var abas = { cardapio: 'aba-cardapio', estatisticas: 'aba-estatisticas', saude: 'aba-saude' };
+        var destino = abas[window.location.hash.replace('#', '')];
+        if (destino) { document.getElementById(destino).checked = true; }
+    })();
+    </script>
 
 </body>
 </html>

@@ -207,7 +207,13 @@
                     <td>{{ item.unidade_medida }}</td>
                     <td>{{ item.data_entrada.strftime('%d/%m/%Y') if item.data_entrada else '-' }}</td>
                     <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '-' }}</td>
-                    <td>{{ item.nota_fiscal or '-' }}</td>
+                    <td>
+                        {% if item.nota_fiscal and item.nota_fiscal in notas_disponiveis %}
+                            <a href="{{ url_for('static', filename='notas_fiscais/' ~ item.nota_fiscal) }}" target="_blank" rel="noopener" class="btn-editar">🧾 Ver nota</a>
+                        {% else %}
+                            {{ item.nota_fiscal or '-' }}
+                        {% endif %}
+                    </td>
                     <td>
                         {% if item.perecivel %}
                             <span class="badge badge-amber">Sim</span>
