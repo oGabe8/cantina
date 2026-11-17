@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Área Restrita - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -24,6 +28,19 @@
 
     <!-- Login Admin -->
     <div class="login-wrapper">
+        <div class="auth-split">
+
+            <aside class="auth-painel">
+                <span class="auth-painel-selo">🛡️ Área Restrita</span>
+                <h2 class="auth-painel-titulo">Merenda de <span>Qualidade</span> para Todos os Alunos</h2>
+                <p class="auth-painel-texto">Alimentando o futuro com Nutrição e Cuidado</p>
+                <ul class="auth-painel-lista">
+                    <li><span>🥗</span> Alimentação Saudável</li>
+                    <li><span>❤️</span> Suporte Eficiente</li>
+                    <li><span>🔒</span> Acesso Seguro</li>
+                </ul>
+            </aside>
+
         <div class="login-card">
 
             <div class="login-logo">🛡️</div>
@@ -58,13 +75,15 @@
             <a href="{{ url_for('home') }}" class="login-voltar">← Voltar para a Home</a>
 
         </div>
+
+        </div>
     </div>
 
     <!-- Rodape -->
     <footer class="main-footer">
         <div class="footer-bottom">
             <span>&copy; 2026 Cantina Digital</span>
-            <span style="color:#cfe3f7;">💬 Alimentação Saudável · ❤️ Suporte Eficiente · 🔒 Acesso Seguro</span>
+            <span>💬 Alimentação Saudável · ❤️ Suporte Eficiente · 🔒 Acesso Seguro</span>
         </div>
     </footer>
 

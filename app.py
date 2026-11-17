@@ -667,6 +667,7 @@ def painel_nutricionista():
     ficha_saude = []
     relatorio_agend = []
     cardapio = []
+    estoque = []
     total_alunos = 0
     total_agendamentos = 0
 
@@ -676,6 +677,10 @@ def painel_nutricionista():
 
         cursor.execute("select * from cardapio order by id_cardapio")
         cardapio = cursor.fetchall()
+
+        #itens do estoque (a nutri tambem acompanha e edita o estoque)
+        cursor.execute("select * from estoque order by nome_item")
+        estoque = cursor.fetchall()
 
         cursor.execute("select count(*) as total from alunos")
         total_alunos = cursor.fetchone()['total']
@@ -705,21 +710,36 @@ def painel_nutricionista():
     except Exception as e:
         print(e)
 
+    #notas fiscais que realmente existem na pasta static/notas_fiscais (so essas ganham o botao "Ver nota")
+    pasta_notas = os.path.join(app.static_folder, 'notas_fiscais')
+    notas_disponiveis = os.listdir(pasta_notas) if os.path.isdir(pasta_notas) else []
+
     return render_template('painel_nutricionista.html', ficha_saude=ficha_saude, relatorio_agend=relatorio_agend,
-    total_alunos=total_alunos, total_agendamentos=total_agendamentos, cardapio=cardapio)
+    total_alunos=total_alunos, total_agendamentos=total_agendamentos, cardapio=cardapio, estoque=estoque,
+    total_itens_estoque=len(estoque), notas_disponiveis=notas_disponiveis)
+
+
+#funcao auxiliar: devolve o painel certo de quem esta mexendo no estoque
+#(admin volta pro painel do admin, nutricionista volta pro painel dela)
+def painel_do_estoque():
+    if session.get('perfil') == 'nutricionista':
+        return 'painel_nutricionista'
+    return 'painel_admin'
 
 
 #10. rota de redirecionamento do card estoque
 @app.route('/estoque')
 def estoque():
-    return redirect(url_for('painel_admin'))
+    return redirect(url_for(painel_do_estoque(), _anchor='estoque'))
 
 
 #10.1 rota p cadastrar um novo item de estoque
 @app.route('/estoque/cadastrar', methods=['POST'])
 def cadastrar_estoque():
-    if session.get('perfil') != 'admin':
+    if session.get('perfil') not in ('admin', 'nutricionista'):
         return redirect(url_for('login_admin'))
+
+    painel_destino = painel_do_estoque()
 
     nome_item = request.form['nome_item']
     quantidade = request.form['quantidade_disponivel']
@@ -736,7 +756,7 @@ def cadastrar_estoque():
 
     if quantidade_num < 1:
         flash('A quantidade precisa ser de no mínimo 1 para cadastrar o item.', 'erro')
-        return redirect(url_for('painel_admin', _anchor='estoque'))
+        return redirect(url_for(painel_destino, _anchor='estoque'))
 
     #captura o nome do arquivo da nota fiscal enviado, sem guardar ele fisicamente
     arquivo_nf = request.files.get('nota_fiscal')
@@ -758,14 +778,16 @@ def cadastrar_estoque():
         print(e)
         flash('Erro ao cadastrar item.', 'erro')
 
-    return redirect(url_for('painel_admin', _anchor='estoque'))
+    return redirect(url_for(painel_destino, _anchor='estoque'))
 
 
 #10.1.1 rota p editar um item do estoque (GET mostra o formulário, POST salva)
 @app.route('/estoque/editar/<int:id_item>', methods=['GET', 'POST'])
 def editar_estoque(id_item):
-    if session.get('perfil') != 'admin':
+    if session.get('perfil') not in ('admin', 'nutricionista'):
         return redirect(url_for('login_admin'))
+
+    painel_destino = painel_do_estoque()
 
     if request.method == 'POST':
         nome_item = request.form['nome_item'].strip()
@@ -815,7 +837,7 @@ def editar_estoque(id_item):
             cursor.close()
             conexao.close()
             flash('Item atualizado com sucesso.', 'sucesso')
-            return redirect(url_for('painel_admin', _anchor='estoque'))
+            return redirect(url_for(painel_destino, _anchor='estoque'))
         except Exception as e:
             print(e)
             flash('Erro ao atualizar item.', 'erro')
@@ -835,16 +857,18 @@ def editar_estoque(id_item):
 
     if not item:
         flash('Item não encontrado.', 'erro')
-        return redirect(url_for('painel_admin', _anchor='estoque'))
+        return redirect(url_for(painel_destino, _anchor='estoque'))
 
-    return render_template('editar_estoque.html', item=item)
+    return render_template('editar_estoque.html', item=item, painel_destino=painel_destino)
 
 
 #10.2 rota p excluir um item do estoque
 @app.route('/estoque/excluir/<int:id_item>', methods=['POST'])
 def excluir_estoque(id_item):
-    if session.get('perfil') != 'admin':
+    if session.get('perfil') not in ('admin', 'nutricionista'):
         return redirect(url_for('login_admin'))
+
+    painel_destino = painel_do_estoque()
 
     try:
         conexao = conectar_bd()
@@ -858,7 +882,7 @@ def excluir_estoque(id_item):
         print(e)
         flash('Erro ao excluir item.', 'erro')
 
-    return redirect(url_for('painel_admin', _anchor='estoque'))
+    return redirect(url_for(painel_destino, _anchor='estoque'))
 
 
 #11. rota p sair

@@ -4,27 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <!-- Barra de autenticação (login do aluno fica aqui) -->
-    <div class="auth-bar">
-        {% if session.get('id_aluno') %}
-            <span class="welcome-msg">Olá, {{ session.get('nome_aluno') }}!</span>
-            <a href="{{ url_for('painel_aluno') }}" class="auth-btn">📅 Meu Painel</a>
-            <a href="{{ url_for('logout') }}" class="auth-btn vermelho">🚪 Sair</a>
-        {% else %}
-            <form class="auth-form" method="POST" action="{{ url_for('login') }}">
-                <input type="text" name="matricula" placeholder="Matrícula" required>
-                <input type="password" name="senha" placeholder="Senha" required>
-                <button type="submit" class="auth-btn">Entrar</button>
-            </form>
-            <a href="{{ url_for('cadastro') }}" class="auth-btn verde">📝 Cadastrar Aluno</a>
-            <span class="auth-separador"></span>
-            <a href="{{ url_for('login_admin') }}" class="auth-restrita">🛡️ Área Restrita</a>
-        {% endif %}
-    </div>
+    <!-- Cabecalho com a logo -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-box">👩‍🍳🥘</div>
+                <span class="brand-name">Cantina Digital</span>
+            </div>
+            <nav class="main-nav">
+                <a href="{{ url_for('home') }}" class="active">Início</a>
+                <a href="#cardapio">Cardápio</a>
+            </nav>
+        </div>
+    </header>
 
     <!-- Msg Flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -35,33 +35,45 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Cabecalho com a logo -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logo-area">
-                <div class="logo-box" align="center">👩‍🍳🥘</div>
-                <span class="brand-name">Cantina Digital</span>
-            </div>
-            <nav class="main-nav">
-                <a href="{{ url_for('home') }}" class="active">Início</a>
-                <a href="#cardapio">Cardápio</a>
-            </nav>
-        </div>
-    </header>
+    <!-- ===== PARTE 1: login (em cima) + banner da cozinheira (embaixo, largura total) ===== -->
+    <section class="hero-section home-topo">
 
-    <!-- Banner da cozinheira -->
-    <section class="hero-section">
+        <!-- Login do aluno: card largo e compacto, acima da imagem -->
+        <div class="auth-bar">
+            <p class="auth-titulo">🔑 Acesso do Aluno</p>
+            {% if session.get('id_aluno') %}
+                <span class="welcome-msg">Olá, {{ session.get('nome_aluno') }}!</span>
+                <a href="{{ url_for('painel_aluno') }}" class="auth-btn">📅 Meu Painel</a>
+                <a href="{{ url_for('logout') }}" class="auth-btn vermelho">🚪 Sair</a>
+            {% else %}
+                <form class="auth-form" method="POST" action="{{ url_for('login') }}">
+                    <input type="text" name="matricula" placeholder="Matrícula" required>
+                    <input type="password" name="senha" placeholder="Senha" required>
+                    <button type="submit" class="auth-btn">Entrar</button>
+                </form>
+                <div class="auth-extras">
+                    <a href="{{ url_for('cadastro') }}" class="auth-btn verde">📝 Cadastrar Aluno</a>
+                    <span class="auth-separador"></span>
+                    <a href="{{ url_for('login_admin') }}" class="auth-restrita">🛡️ Área Restrita</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Banner da cozinheira -->
         <div class="hero-container">
+            <img class="hero-media" src="/static/fundo.png" alt="" aria-hidden="true">
             <div class="hero-content">
-                <h1 class="hero-title">Merenda de Qualidade para Todos os Alunos<br>
+                <span class="hero-selo">🥗 Alimentação Saudável</span>
+                <h1 class="hero-title">Merenda de <span class="hero-destaque">Qualidade</span> para Todos os Alunos</h1>
                 <p class="hero-subtitle">Alimentando o futuro com Nutrição e Cuidado</p>
                 <a href="#cardapio" class="btn-primary">Ver Cardápio</a>
             </div>
         </div>
+
     </section>
 
-    <!-- Próxima Refeição e Avisos lado a lado -->
-    <section class="proximas-secao">
+    <!-- ===== PARTE 2: Próxima Refeição e Avisos lado a lado ===== -->
+    <section class="proximas-secao" id="cardapio">
         <div class="proximas-grid">
 
             <!-- próx refeição -->
@@ -136,7 +148,7 @@
         </div>
     </section>
 
-    <!-- Gestao da cantina -->
+    <!-- ===== PARTE 3: Gestao da cantina + rodape ===== -->
     <section class="management-section">
         <h2 class="management-header">Gestão da Cantina</h2>
         <div class="management-grid">

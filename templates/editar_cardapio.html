@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Cardápio - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="pagina-form">
 
     <!-- Cabecalho -->
     <header class="main-header">
@@ -41,8 +45,8 @@
     </div>
 
     <!-- Formulario de edicao -->
-    <div class="form-painel" style="margin: 0 40px 20px 40px;">
-        <form method="POST" action="{{ url_for('editar_cardapio', id_cardapio=item.id_cardapio) }}">
+    <div class="form-painel form-painel--pagina">
+        <form class="form-grid" method="POST" action="{{ url_for('editar_cardapio', id_cardapio=item.id_cardapio) }}">
             <div class="campo">
                 <label for="refeicao_principal">🍽️ Refeição Principal</label>
                 <input type="text" id="refeicao_principal" name="refeicao_principal" maxlength="80" value="{{ item.refeicao_principal }}" required>
@@ -63,8 +67,10 @@
                 <label for="nome_sobremesa">🍮 Nome da Sobremesa</label>
                 <input type="text" id="nome_sobremesa" name="nome_sobremesa" maxlength="50" value="{{ nome_atual }}" placeholder="Ex: Banana (deixe vazio para não ter sobremesa)">
             </div>
-            <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
-            <a href="{{ url_for(painel_destino, _anchor='cardapio') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
+            <div class="form-acoes">
+                <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
+                <a href="{{ url_for(painel_destino, _anchor='cardapio') }}" class="btn-ghost">Cancelar</a>
+            </div>
         </form>
     </div>
 

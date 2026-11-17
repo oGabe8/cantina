@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Nutricionista - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -36,7 +40,7 @@
     <div class="painel-header">
         <div>
             <h1 class="painel-titulo">🥗 Painel da Nutricionista</h1>
-            <p class="painel-subtitulo">Bem-vinda, {{ session.get('perfil', 'Nutricionista')|capitalize }}. Acompanhe a saúde e a adesão dos alunos.</p>
+            <p class="painel-subtitulo painel-boas-vindas">Bem-vinda, {{ session.get('perfil', 'Nutricionista')|capitalize }}. Acompanhe a saúde e a adesão dos alunos.</p>
         </div>
     </div>
 
@@ -52,15 +56,22 @@
         <div class="stat-card verde">
             <span class="stat-icon">📅</span>
             <div>
-                <div class="stat-numero" style="color:#1f8a4c;">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
+                <div class="stat-numero">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
                 <div class="stat-label">Total de Agendamentos</div>
             </div>
         </div>
         <div class="stat-card amber">
             <span class="stat-icon">❤️</span>
             <div>
-                <div class="stat-numero" style="color:#d98c0f;">{{ ficha_saude|length if ficha_saude is defined else '—' }}</div>
+                <div class="stat-numero">{{ ficha_saude|length if ficha_saude is defined else '—' }}</div>
                 <div class="stat-label">Alunos com Restrição</div>
+            </div>
+        </div>
+        <div class="stat-card amber">
+            <span class="stat-icon">📦</span>
+            <div>
+                <div class="stat-numero">{{ total_itens_estoque if total_itens_estoque is defined else '—' }}</div>
+                <div class="stat-label">Itens em Estoque</div>
             </div>
         </div>
     </div>
@@ -71,11 +82,13 @@
         <input type="radio" name="aba-nutri" id="aba-saude" class="tab-radio" checked>
         <input type="radio" name="aba-nutri" id="aba-estatisticas" class="tab-radio">
         <input type="radio" name="aba-nutri" id="aba-cardapio" class="tab-radio">
+        <input type="radio" name="aba-nutri" id="aba-estoque" class="tab-radio">
 
         <div class="tab-nav">
             <label for="aba-saude" class="tab-label">❤️ Comorbidades e Restrições</label>
             <label for="aba-estatisticas" class="tab-label">📊 Estatísticas de Adesão</label>
             <label for="aba-cardapio" class="tab-label">🍲 Cardápio</label>
+            <label for="aba-estoque" class="tab-label">📦 Controle de Estoque</label>
         </div>
 
         <div class="tab-paineis">
@@ -98,16 +111,16 @@
                         <tbody>
                             {% for aluno in ficha_saude %}
                             <tr>
-                                <td><strong>{{ aluno.nome }}</strong></td>
-                                <td><span class="badge badge-azul">{{ aluno.turma }}</span></td>
-                                <td>
+                                <td data-label="Nome"><strong>{{ aluno.nome }}</strong></td>
+                                <td data-label="Turma"><span class="badge badge-azul">{{ aluno.turma }}</span></td>
+                                <td data-label="Comorbidades">
                                     {% if aluno.comorbidades %}
                                         <span class="badge badge-amber">{{ aluno.comorbidades }}</span>
                                     {% else %}
                                         <span class="sem-itens">Nenhuma</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td data-label="Atestado Médico">
                                     {% if aluno.atestado_arquivo %}
                                         {{ aluno.atestado_arquivo }}
                                     {% else %}
@@ -187,7 +200,7 @@
                 <p class="painel-section-titulo">🍲 Cardápio da semana: clique em Editar para ajustar um dia</p>
                 {% if cardapio %}
                 <div class="tabela-container">
-                    <table class="tabela-dados">
+                    <table class="tabela-dados tabela-negrito">
                         <thead>
                             <tr>
                                 <th>Dia</th>
@@ -200,11 +213,11 @@
                         <tbody>
                             {% for dia in cardapio %}
                             <tr>
-                                <td><strong>{{ dia.dia_semana }}</strong></td>
-                                <td>{{ dia.refeicao_principal }}</td>
-                                <td>{{ dia.acompanhamentos or '-' }}</td>
-                                <td>{{ dia.fruta_sobremesa or '-' }}</td>
-                                <td>
+                                <td data-label="Dia"><strong>{{ dia.dia_semana }}</strong></td>
+                                <td data-label="Refeição Principal">{{ dia.refeicao_principal }}</td>
+                                <td data-label="Acompanhamentos">{{ dia.acompanhamentos or '-' }}</td>
+                                <td data-label="Sobremesa">{{ dia.fruta_sobremesa or '-' }}</td>
+                                <td data-label="Ações">
                                     <a href="{{ url_for('editar_cardapio', id_cardapio=dia.id_cardapio) }}" class="btn-editar">✏️ Editar</a>
                                 </td>
                             </tr>
@@ -220,6 +233,126 @@
                 {% endif %}
             </div>
 
+            <!-- CONTROLE DE ESTOQUE -->
+            <div class="tab-conteudo">
+                <p class="painel-section-titulo">📦 Cadastre, edite e acompanhe os itens do estoque da cantina</p>
+
+                <!-- Form de cadastro -->
+                <div class="form-painel" style="margin-bottom:20px;">
+                    <form class="form-grid form-grid--3" method="POST" action="{{ url_for('cadastrar_estoque') }}" enctype="multipart/form-data" onsubmit="return validarQuantidadeEstoque();">
+                        <div class="campo">
+                            <label for="nome_item">📦 Nome do Item</label>
+                            <input type="text" id="nome_item" name="nome_item" placeholder="Ex: Arroz" required>
+                        </div>
+                        <div class="campo">
+                            <label for="quantidade_disponivel">🔢 Quantidade</label>
+                            <input type="number" id="quantidade_disponivel" name="quantidade_disponivel" min="1" step="1" required>
+                            <span id="msg_quantidade_invalida" class="flash-message flash-erro" style="display:none; margin:8px 0 0 0; padding:8px 12px; font-size:12px;">
+                                ⚠ A quantidade precisa ser no mínimo 1.
+                            </span>
+                        </div>
+                        <div class="campo">
+                            <label for="unidade_medida">📏 Unidade</label>
+                            <input type="text" id="unidade_medida" name="unidade_medida" placeholder="Ex: KG, LITRO, UNIDADE" required>
+                        </div>
+                        <div class="campo">
+                            <label for="data_entrada">📅 Data de Entrada</label>
+                            <input type="date" id="data_entrada" name="data_entrada">
+                        </div>
+                        <div class="campo">
+                            <label for="data_validade">⏳ Data de Validade</label>
+                            <input type="date" id="data_validade" name="data_validade">
+                        </div>
+                        <div class="campo">
+                            <label for="nota_fiscal">🧾 Nota Fiscal (PDF ou imagem)</label>
+                            <input type="file" id="nota_fiscal" name="nota_fiscal">
+                        </div>
+                        <div class="campo">
+                            <label for="perecivel">🍃 Perecível?</label>
+                            <select id="perecivel" name="perecivel">
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
+                        </div>
+                        <div class="form-acoes"><button type="submit" class="btn-cadastrar">➕ Cadastrar Item</button></div>
+                    </form>
+                </div>
+
+                {% if estoque %}
+                <div class="campo" style="max-width:360px; margin-bottom:16px;">
+                    <label for="busca_estoque">🔍 Pesquisar item no estoque</label>
+                    <input type="text" id="busca_estoque" placeholder="Digite o nome do alimento..." onkeyup="filtrarEstoque()" autocomplete="off">
+                </div>
+                <div class="tabela-container">
+                    <table class="tabela-dados tabela-compacta" id="tabela_estoque">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Entrada</th>
+                                <th>Validade</th>
+                                <th>Nota Fiscal</th>
+                                <th>Perecível</th>
+                                <th>Situação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in estoque %}
+                            <tr data-nome="{{ item.nome_item|lower }}">
+                                <td data-label="Item"><strong>{{ item.nome_item }}</strong></td>
+                                <td data-label="Quantidade">{{ item.quantidade_disponivel }}</td>
+                                <td data-label="Unidade">{{ item.unidade_medida }}</td>
+                                <td data-label="Entrada">{{ item.data_entrada.strftime('%d/%m/%Y') if item.data_entrada else '-' }}</td>
+                                <td data-label="Validade">{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '-' }}</td>
+                                <td data-label="Nota Fiscal">
+                                    {% if item.nota_fiscal and notas_disponiveis is defined and item.nota_fiscal in notas_disponiveis %}
+                                        <a href="{{ url_for('static', filename='notas_fiscais/' ~ item.nota_fiscal) }}" target="_blank" rel="noopener" class="btn-editar">🧾 Ver nota</a>
+                                    {% else %}
+                                        {{ item.nota_fiscal or '-' }}
+                                    {% endif %}
+                                </td>
+                                <td data-label="Perecível">
+                                    {% if item.perecivel %}
+                                        <span class="badge badge-amber">Sim</span>
+                                    {% else %}
+                                        <span class="badge badge-azul">Não</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Situação">
+                                    {% if item.quantidade_disponivel <= 5 %}
+                                        <span class="badge badge-vermelho">⚠ Estoque Baixo</span>
+                                    {% else %}
+                                        <span class="badge badge-verde">✔ Disponível</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Ações">
+                                    <div class="acoes-linha">
+                                        <a href="{{ url_for('editar_estoque', id_item=item.id_item) }}" class="btn-editar">✏️ Editar</a>
+                                        <form method="POST" action="{{ url_for('excluir_estoque', id_item=item.id_item) }}"
+                                              onsubmit="return confirm('Excluir este item do estoque?');">
+                                            <button type="submit" class="btn-cancelar">❌ Excluir</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p id="msg_estoque_vazio" class="tabela-vazio" style="display:none;">
+                    <span class="icone-vazio">🔍</span>
+                    Nenhum item encontrado.
+                </p>
+                {% else %}
+                <div class="tabela-vazio">
+                    <span class="icone-vazio">📦</span>
+                    Nenhum item de estoque cadastrado.
+                </div>
+                {% endif %}
+            </div>
+
         </div>
     </div>
 
@@ -231,9 +364,44 @@
     </footer>
 
     <script>
+    // nao deixa cadastrar item com quantidade menor que 1
+    function validarQuantidadeEstoque() {
+        var campo = document.getElementById('quantidade_disponivel');
+        var msg = document.getElementById('msg_quantidade_invalida');
+        var valor = parseInt(campo.value, 10);
+
+        if (isNaN(valor) || valor < 1) {
+            msg.style.display = 'block';
+            campo.focus();
+            return false; // bloqueia o envio do formulário
+        }
+
+        msg.style.display = 'none';
+        return true;
+    }
+
+    // busca por nome dentro da tabela do estoque
+    function filtrarEstoque() {
+        var termo = document.getElementById('busca_estoque').value.trim().toLowerCase();
+        var linhas = document.querySelectorAll('#tabela_estoque tbody tr');
+        var encontrouAlgum = false;
+
+        linhas.forEach(function (linha) {
+            var nome = linha.getAttribute('data-nome');
+            if (nome.indexOf(termo) !== -1) {
+                linha.style.display = '';
+                encontrouAlgum = true;
+            } else {
+                linha.style.display = 'none';
+            }
+        });
+
+        document.getElementById('msg_estoque_vazio').style.display = encontrouAlgum ? 'none' : 'block';
+    }
+
     // abre a aba indicada na URL (ex.: /painel_nutricionista#cardapio), pra voltar na aba certa depois de editar
     (function () {
-        var abas = { cardapio: 'aba-cardapio', estatisticas: 'aba-estatisticas', saude: 'aba-saude' };
+        var abas = { cardapio: 'aba-cardapio', estatisticas: 'aba-estatisticas', saude: 'aba-saude', estoque: 'aba-estoque' };
         var destino = abas[window.location.hash.replace('#', '')];
         if (destino) { document.getElementById(destino).checked = true; }
     })();

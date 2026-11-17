@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Aluno - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -36,7 +40,7 @@
     <div class="painel-header">
         <div>
             <h1 class="painel-titulo">🧑👩 Painel do Aluno</h1>
-            <p class="painel-subtitulo">Bem-vindo (a), {{ session.get('nome_aluno', 'Estudante') }}.   Aqui você gerencia suas refeições.</p>
+            <p class="painel-subtitulo painel-boas-vindas">Bem-vindo (a), {{ session.get('nome_aluno', 'Estudante') }}.   Aqui você gerencia suas refeições.</p>
         </div>
     </div>
 
@@ -84,7 +88,7 @@
                         <img src="{{ url_for('static', filename='sexta.png') }}?v=2" alt="{{ item.refeicao_principal }}" class="menu-card-img">
                         {% endif %}
                         <div class="cardapio-card-body">
-                            <a href="{{ url_for('agendar', id_cardapio=item.id_cardapio) }}" class="btn-agendar">➕ Agendar refeição</a>
+                            <a href="{{ url_for('agendar', id_cardapio=item.id_cardapio) }}" class="btn-agendar"><svg class="btn-agendar-mais" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 4.5v15M4.5 12h15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>Agendar refeição</a>
 
                             {% set nutri = nutricao_por_dia.get(item.dia_semana) %}
                             {% if nutri %}
@@ -125,7 +129,7 @@
             <div class="tab-conteudo">
                 {% if agendamentos %}
                 <div class="tabela-container">
-                    <table class="tabela-dados">
+                    <table class="tabela-dados tabela-negrito">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -139,18 +143,18 @@
                         <tbody>
                             {% for ag in agendamentos %}
                             <tr>
-                                <td>{{ loop.index }}</td>
-                                <td><strong>{{ ag.dia_semana }}</strong></td>
-                                <td>{{ ag.refeicao_principal }}</td>
-                                <td>{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
-                                <td>
+                                <td data-label="#">{{ loop.index }}</td>
+                                <td data-label="Dia da Semana"><strong>{{ ag.dia_semana }}</strong></td>
+                                <td data-label="Refeição">{{ ag.refeicao_principal }}</td>
+                                <td data-label="Data do Agendamento">{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
+                                <td data-label="Status">
                                     {% if ag.status_reserva == 'confirmado' %}
                                         <span class="badge badge-verde">✔ Confirmado</span>
                                     {% else %}
-                                        <span class="badge badge-vermelho">{{ ag.status_reserva }}</span>
+                                        <span class="badge badge-vermelho" data-status="{{ ag.status_reserva|lower|trim }}">{{ ag.status_reserva }}</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td data-label="Ações">
                                     <form method="POST" action="{{ url_for('cancelar_agendamento', id_reserva=ag.id_grid_reserva) }}">
                                         <button type="submit" class="btn-cancelar">❌ Cancelar</button>
                                     </form>
@@ -235,7 +239,7 @@
     <footer class="main-footer">
         <div class="footer-bottom">
             <span>&copy; 2026 Cantina Digital</span>
-            <a href="{{ url_for('home') }}" style="color:#cfe3f7;">Voltar ao Início</a>
+            <a href="{{ url_for('home') }}">Voltar ao Início</a>
         </div>
     </footer>
 

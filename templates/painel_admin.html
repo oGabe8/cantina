@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Administrador - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -36,7 +40,7 @@
     <div class="painel-header">
         <div>
             <h1 class="painel-titulo">⚙️ Painel Administrativo</h1>
-            <p class="painel-subtitulo">Bem-vindo(a), {{ session.get('perfil', 'Administrador')|capitalize }}!</p>
+            <p class="painel-subtitulo painel-boas-vindas">Bem-vindo(a), {{ session.get('perfil', 'Administrador')|capitalize }}!</p>
         </div>
     </div>
 
@@ -52,14 +56,14 @@
         <div class="stat-card verde">
             <span class="stat-icon">📅</span>
             <div>
-                <div class="stat-numero" style="color:#1f8a4c;">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
+                <div class="stat-numero">{{ total_agendamentos if total_agendamentos is defined else '—' }}</div>
                 <div class="stat-label">Total de Agendamentos</div>
             </div>
         </div>
         <div class="stat-card amber">
             <span class="stat-icon">📦</span>
             <div>
-                <div class="stat-numero" style="color:#d98c0f;">{{ total_itens_estoque if total_itens_estoque is defined else '—' }}</div>
+                <div class="stat-numero">{{ total_itens_estoque if total_itens_estoque is defined else '—' }}</div>
                 <div class="stat-label">Itens em Estoque</div>
             </div>
         </div>
@@ -103,18 +107,18 @@
                         <tbody>
                             {% for aluno in alunos %}
                             <tr>
-                                <td><strong>{{ aluno.nome }}</strong></td>
-                                <td>{{ aluno.matricula }}</td>
-                                <td><span class="badge badge-azul">{{ aluno.turma }}</span></td>
-                                <td>
+                                <td data-label="Nome"><strong>{{ aluno.nome }}</strong></td>
+                                <td data-label="Matrícula">{{ aluno.matricula }}</td>
+                                <td data-label="Turma"><span class="badge badge-azul">{{ aluno.turma }}</span></td>
+                                <td data-label="Status">
                                     {% if aluno.status_cadastro == 'ativo' %}
                                         <span class="badge badge-verde">✔ Ativo</span>
                                     {% else %}
                                         <span class="badge badge-vermelho">{{ aluno.status_cadastro }}</span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <td data-label="Ações">
+                                    <div class="acoes-linha">
                                         <a href="{{ url_for('editar_aluno', id_aluno=aluno.id_aluno) }}" class="btn-editar">✏️ Editar</a>
                                         <form method="POST" action="{{ url_for('excluir_aluno', id_aluno=aluno.id_aluno) }}"
                                               onsubmit="return confirm('Excluir este aluno? Os agendamentos dele também serão apagados.');">
@@ -140,7 +144,7 @@
 
     <!-- Form de cadastro -->
     <div class="form-painel" style="margin-bottom:20px;">
-        <form method="POST" action="{{ url_for('cadastrar_estoque') }}" enctype="multipart/form-data" onsubmit="return validarQuantidadeEstoque();">
+        <form class="form-grid form-grid--3" method="POST" action="{{ url_for('cadastrar_estoque') }}" enctype="multipart/form-data" onsubmit="return validarQuantidadeEstoque();">
             <div class="campo">
                 <label for="nome_item">📦 Nome do Item</label>
                 <input type="text" id="nome_item" name="nome_item" placeholder="Ex: Arroz" required>
@@ -175,7 +179,7 @@
                     <option value="nao">Não</option>
                 </select>
             </div>
-            <button type="submit" class="btn-cadastrar">➕ Cadastrar Item</button>
+            <div class="form-acoes"><button type="submit" class="btn-cadastrar">➕ Cadastrar Item</button></div>
         </form>
     </div>
 
@@ -185,7 +189,7 @@
         <input type="text" id="busca_estoque" placeholder="Digite o nome do alimento..." onkeyup="filtrarEstoque()" autocomplete="off">
     </div>
     <div class="tabela-container">
-        <table class="tabela-dados" id="tabela_estoque">
+        <table class="tabela-dados tabela-compacta" id="tabela_estoque">
             <thead>
                 <tr>
                     <th>Item</th>
@@ -202,39 +206,40 @@
             <tbody>
                 {% for item in estoque %}
                 <tr data-nome="{{ item.nome_item|lower }}">
-                    <td><strong>{{ item.nome_item }}</strong></td>
-                    <td>{{ item.quantidade_disponivel }}</td>
-                    <td>{{ item.unidade_medida }}</td>
-                    <td>{{ item.data_entrada.strftime('%d/%m/%Y') if item.data_entrada else '-' }}</td>
-                    <td>{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '-' }}</td>
-                    <td>
+                    <td data-label="Item"><strong>{{ item.nome_item }}</strong></td>
+                    <td data-label="Quantidade">{{ item.quantidade_disponivel }}</td>
+                    <td data-label="Unidade">{{ item.unidade_medida }}</td>
+                    <td data-label="Entrada">{{ item.data_entrada.strftime('%d/%m/%Y') if item.data_entrada else '-' }}</td>
+                    <td data-label="Validade">{{ item.data_validade.strftime('%d/%m/%Y') if item.data_validade else '-' }}</td>
+                    <td data-label="Nota Fiscal">
                         {% if item.nota_fiscal and item.nota_fiscal in notas_disponiveis %}
                             <a href="{{ url_for('static', filename='notas_fiscais/' ~ item.nota_fiscal) }}" target="_blank" rel="noopener" class="btn-editar">🧾 Ver nota</a>
                         {% else %}
                             {{ item.nota_fiscal or '-' }}
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="Perecível">
                         {% if item.perecivel %}
                             <span class="badge badge-amber">Sim</span>
                         {% else %}
                             <span class="badge badge-azul">Não</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="Situação">
                         {% if item.quantidade_disponivel <= 5 %}
                             <span class="badge badge-vermelho">⚠ Estoque Baixo</span>
                         {% else %}
                             <span class="badge badge-verde">✔ Disponível</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <a href="{{ url_for('editar_estoque', id_item=item.id_item) }}" class="btn-editar"
-                           style="margin-bottom:6px;">✏️ Editar</a>
-                        <form method="POST" action="{{ url_for('excluir_estoque', id_item=item.id_item) }}"
-                              onsubmit="return confirm('Excluir este item do estoque?');">
-                            <button type="submit" class="btn-cancelar">❌ Excluir</button>
-                        </form>
+                    <td data-label="Ações">
+                        <div class="acoes-linha">
+                            <a href="{{ url_for('editar_estoque', id_item=item.id_item) }}" class="btn-editar">✏️ Editar</a>
+                            <form method="POST" action="{{ url_for('excluir_estoque', id_item=item.id_item) }}"
+                                  onsubmit="return confirm('Excluir este item do estoque?');">
+                                <button type="submit" class="btn-cancelar">❌ Excluir</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -261,7 +266,7 @@
                     <input type="text" id="busca_agendamento" placeholder="Digite o nome do aluno..." onkeyup="filtrarAgendamentos()" autocomplete="off">
                 </div>
                 <div class="tabela-container">
-                    <table class="tabela-dados" id="tabela_agendamentos">
+                    <table class="tabela-dados tabela-negrito" id="tabela_agendamentos">
                         <thead>
                             <tr>
                                 <th>Aluno</th>
@@ -276,19 +281,19 @@
                         <tbody>
                             {% for ag in agendamentos %}
                             <tr data-nome="{{ ag.nome|lower }}">
-                                <td><strong>{{ ag.nome }}</strong></td>
-                                <td><span class="badge badge-azul">{{ ag.turma }}</span></td>
-                                <td>{{ ag.dia_semana }}</td>
-                                <td>{{ ag.refeicao_principal }}</td>
-                                <td>{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
-                                <td>
+                                <td data-label="Aluno"><strong>{{ ag.nome }}</strong></td>
+                                <td data-label="Turma"><span class="badge badge-azul">{{ ag.turma }}</span></td>
+                                <td data-label="Dia da Semana">{{ ag.dia_semana }}</td>
+                                <td data-label="Refeição">{{ ag.refeicao_principal }}</td>
+                                <td data-label="Agendado em">{{ ag.data_reserva.strftime('%d/%m/%Y às %H:%M') if ag.data_reserva else '-' }}</td>
+                                <td data-label="Status">
                                     {% if ag.status_reserva|lower == 'confirmado' %}
                                         <span class="badge badge-verde">✔ Confirmado</span>
                                     {% else %}
-                                        <span class="badge badge-vermelho">{{ ag.status_reserva }}</span>
+                                        <span class="badge badge-vermelho" data-status="{{ ag.status_reserva|lower|trim }}">{{ ag.status_reserva }}</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td data-label="Ações">
                                     <form method="POST" action="{{ url_for('admin_cancelar_agendamento', id_reserva=ag.id_grid_reserva) }}"
                                           onsubmit="return confirm('Cancelar este agendamento?');">
                                         <button type="submit" class="btn-cancelar">❌ Cancelar</button>
@@ -316,12 +321,12 @@
 
                 <!-- Form de novo aviso -->
                 <div class="form-painel" style="margin-bottom:20px;">
-                    <form method="POST" action="{{ url_for('cadastrar_aviso') }}">
+                    <form class="form-grid" method="POST" action="{{ url_for('cadastrar_aviso') }}">
                         <div class="campo">
                             <label for="titulo_aviso">📝 Título</label>
                             <input type="text" id="titulo_aviso" name="titulo" maxlength="100" placeholder="Ex: Novo horário do refeitório" required>
                         </div>
-                        <div class="campo">
+                        <div class="campo campo-largo">
                             <label for="conteudo_aviso">💬 Texto do aviso</label>
                             <textarea id="conteudo_aviso" name="conteudo" rows="3" maxlength="500" placeholder="Escreva o aviso que os alunos vão ver" required></textarea>
                         </div>
@@ -335,7 +340,7 @@
                                 <option value="clock">⏰ Relógio</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-cadastrar">➕ Publicar Aviso</button>
+                        <div class="form-acoes"><button type="submit" class="btn-cadastrar">➕ Publicar Aviso</button></div>
                     </form>
                 </div>
 
@@ -355,7 +360,7 @@
                         <tbody>
                             {% for aviso in avisos %}
                             <tr>
-                                <td>
+                                <td data-label="Ícone">
                                     {% if aviso.tipo_icone == 'star' %}⭐
                                     {% elif aviso.tipo_icone == 'info' %}ℹ️
                                     {% elif aviso.tipo_icone == 'leaf' %}🌿
@@ -363,18 +368,18 @@
                                     {% else %}🔔
                                     {% endif %}
                                 </td>
-                                <td><strong>{{ aviso.titulo }}</strong></td>
-                                <td>{{ aviso.conteudo }}</td>
-                                <td>{{ aviso.data_publicacao.strftime('%d/%m/%Y às %H:%M') if aviso.data_publicacao else '-' }}</td>
-                                <td>
+                                <td data-label="Título"><strong>{{ aviso.titulo }}</strong></td>
+                                <td data-label="Texto">{{ aviso.conteudo }}</td>
+                                <td data-label="Publicado em">{{ aviso.data_publicacao.strftime('%d/%m/%Y às %H:%M') if aviso.data_publicacao else '-' }}</td>
+                                <td data-label="Situação">
                                     {% if aviso.ativo %}
                                         <span class="badge badge-verde">✔ Publicado</span>
                                     {% else %}
                                         <span class="badge badge-amber">Oculto</span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <td data-label="Ações">
+                                    <div class="acoes-linha">
                                         <form method="POST" action="{{ url_for('alternar_aviso', id_aviso=aviso.id_aviso) }}">
                                             {% if aviso.ativo %}
                                             <button type="submit" class="btn-form btn-amber">👁️ Ocultar</button>
@@ -405,7 +410,7 @@
             <div class="tab-conteudo">
                 {% if cardapio %}
                 <div class="tabela-container">
-                    <table class="tabela-dados">
+                    <table class="tabela-dados tabela-negrito">
                         <thead>
                             <tr>
                                 <th>Dia</th>
@@ -418,11 +423,11 @@
                         <tbody>
                             {% for dia in cardapio %}
                             <tr>
-                                <td><strong>{{ dia.dia_semana }}</strong></td>
-                                <td>{{ dia.refeicao_principal }}</td>
-                                <td>{{ dia.acompanhamentos or '-' }}</td>
-                                <td>{{ dia.fruta_sobremesa or '-' }}</td>
-                                <td>
+                                <td data-label="Dia"><strong>{{ dia.dia_semana }}</strong></td>
+                                <td data-label="Refeição Principal">{{ dia.refeicao_principal }}</td>
+                                <td data-label="Acompanhamentos">{{ dia.acompanhamentos or '-' }}</td>
+                                <td data-label="Sobremesa">{{ dia.fruta_sobremesa or '-' }}</td>
+                                <td data-label="Ações">
                                     <a href="{{ url_for('editar_cardapio', id_cardapio=dia.id_cardapio) }}" class="btn-editar">✏️ Editar</a>
                                 </td>
                             </tr>

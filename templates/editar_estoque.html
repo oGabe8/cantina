@@ -4,20 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Item do Estoque - Cantina Digital</title>
+    <meta name="theme-color" content="#0b3d7a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="pagina-form">
 
     <!-- Cabecalho -->
     <header class="main-header">
         <div class="header-container">
             <div class="logo-area">
+                {% if session.get('perfil') == 'nutricionista' %}
+                <div class="logo-box">🥗</div>
+                <span class="brand-name">Espaço da Nutrição</span>
+                {% else %}
                 <div class="logo-box">⚙️</div>
                 <span class="brand-name">Painel Administrativo</span>
+                {% endif %}
             </div>
             <nav class="main-nav">
                 <a href="{{ url_for('home') }}">Início</a>
-                <a href="{{ url_for('painel_admin', _anchor='estoque') }}" class="active">Controle Geral</a>
+                <a href="{{ url_for(painel_destino, _anchor='estoque') }}" class="active">Controle Geral</a>
             </nav>
             <a href="{{ url_for('logout') }}" class="btn-sair">🚪 Sair</a>
         </div>
@@ -41,8 +50,8 @@
     {% endwith %}
 
     <!-- Formulario de edicao -->
-    <div class="form-painel" style="margin: 0 40px 20px 40px;">
-        <form method="POST" action="{{ url_for('editar_estoque', id_item=item.id_item) }}" enctype="multipart/form-data" onsubmit="return validarQuantidadeEstoque();">
+    <div class="form-painel form-painel--pagina">
+        <form class="form-grid" method="POST" action="{{ url_for('editar_estoque', id_item=item.id_item) }}" enctype="multipart/form-data" onsubmit="return validarQuantidadeEstoque();">
             <div class="campo">
                 <label for="nome_item">📦 Nome do Item</label>
                 <input type="text" id="nome_item" name="nome_item" value="{{ item.nome_item }}" required>
@@ -84,15 +93,17 @@
                     <option value="nao" {% if not item.perecivel %}selected{% endif %}>Não</option>
                 </select>
             </div>
-            <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
-            <a href="{{ url_for('painel_admin', _anchor='estoque') }}" class="btn-cancelar" style="display:inline-block; text-decoration:none;">Cancelar</a>
+            <div class="form-acoes">
+                <button type="submit" class="btn-cadastrar">💾 Salvar Alterações</button>
+                <a href="{{ url_for(painel_destino, _anchor='estoque') }}" class="btn-ghost">Cancelar</a>
+            </div>
         </form>
     </div>
 
     <!-- Rodape -->
     <footer class="main-footer">
         <div class="footer-bottom">
-            <span>&copy; 2026 Cantina Digital — Área Administrativa</span>
+            <span>&copy; 2026 Cantina Digital — {% if session.get('perfil') == 'nutricionista' %}Área da Nutricionista{% else %}Área Administrativa{% endif %}</span>
         </div>
     </footer>
 
